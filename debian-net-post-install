@@ -1,0 +1,92 @@
+#!/bin/bash
+
+#### Link Corto a este archivo ####
+####   http://bit.ly/1RHJUEK  #####
+###################################
+
+# Le agregamos las secciones contribuidas y no-libres al sources.list, y el repositorio de Huayra para tenerlo actualizado.
+# Sí, se lo va a agregar hasta a repos donde no corresponde, pero bueno; no jode eso más que una línea de error en el update... 
+# Al final, actualizamos los repos.
+
+sed -i '/^deb/ s/$/ contrib non-free/' /etc/apt/sources.list
+echo -e "\n#Repo de Huayra\ndeb http://repo.huayra.conectarigualdad.gob.ar/huayra/ stable main contrib non-free" >> /etc/apt/sources.list
+apt-get update
+
+# Escondemos los discos de Windows y de Recuperación... Esto para que no hagan cagadas; pero si se confía en los pibes se puede obviar.
+
+echo -e 'KERNEL=="sda2", ENV{UDISKS_IGNORE}="1"\nKERNEL=="sda5", ENV{UDISKS_IGNORE}="1"' > /etc/udev/rules.d/99-hide-disks.rules
+
+# Y habilitamos que no pida contraseña para usar el DATOS (rompe las bolas eso):
+# Aunque OJO: creo que después te monta el disco como sólo lectura, lo tengo que chequear esto.
+
+sed -i '138s/auth_admin_keep/yes/' /usr/share/polkit-1/actions/org.freedesktop.udisks2.policy
+
+# Bajamos el fondo y modificamos la configuración para caretear el Grub (para que sea casi igual al de PSBA y no los jodan al llevarla al técnico)
+# Ojo, queda en castellano, y el de las nets está en inglés...
+
+wget https://www.dropbox.com/s/soua77eh51g6iwi/grub_netbook.png?dl=0 -O /usr/share/images/desktop-base/grub_netbook.png
+
+# En /etc/default/grub Hay que poner la línea del fondo al final, y descomentar lo de "640x480" en el modo gráfico. Ah, y darle el timeout de 30s.
+# En /etc/grub.d/05_debian_theme hay que meter dos líneas (126 y 127) en un if: 
+# echo "    set color_highlight=white/black"
+# echo "    set color_normal=black/black" ... probando si andan pero en el /etc/default/grub directo...
+# Finalmente, hay que rearmar y modificar el contenido de /etc/grub.d/ para que "detecte" las cosas en el orden y bajo el nombre que queremos... 
+# O directamente en el grub.cfg... 
+
+# Y ahora a instalar DE TODO: desde firmware privativo para el wifi hasta jueguitos copados; 
+# pasando obvio por todo tipo de programas de uso educativo y general.
+
+apt-get -y --force-yes install firmware-iwlwifi audacity hydrogen openshot winff stellarium celestia chromium mate-extras samba flashplugin-nonfree minetest bomberclone freeciv-client-gtk armagetronad gcompris scratch jclic geogebra inkscape blender synfig tupi bleachbit gdebi epoptes-client mate-netbook huayra-tpm huayra-motion huayra-compartir
+
+# Agregamos el auto-login al Lightdm.
+
+sed -i '117,118s/^.//' /etc/lightdm/lightdm.conf
+sed -i '/^autologin-user=/ s/$/alumno/' /etc/lightdm/lightdm.conf
+sed -i '/^autologin-user-timeout=/ s/$/10/' /etc/lightdm/lightdm.conf
+
+# Configuramos samba para que se puedan compartir fácil las carpetas en red.
+
+sed -i '27iusershare owner only = false' /etc/samba/smb.conf
+addgroup alumno sambashare
+
+# Configuramos el cliente de Epoptes.
+# OJO - CAMBIAR LA IP Y NOMBRE POR LA IP DEL SERVIDOR QUE SE USE (Si es fija; debería)
+
+sed -i '3iserver 10.3.36.39' /etc/hosts
+epoptes-client -c server
+
+# Bajamos dos paquetes que no están en los repos de Jessie pero andan bien igual: 
+# El synapse, y el Google Earth 6 (porque el 7 no anda bien)
+
+wget http://ftp.us.debian.org/debian/pool/main/s/synapse/synapse_0.2.10-2_i386.deb
+wget http://dl.google.com/linux/earth/deb/pool/main/g/google-earth-stable/google-earth-stable_6.0.3.2197-r0_i386.deb
+
+# ...y los instalamos.
+
+gdebi -n synapse_0.2.10-2_i386.deb
+gdebi -n google-earth-stable_6.0.3.2197-r0_i386.deb
+
+# Arreglamos la búsqueda en el Google Earth, que tiene mal un archivo.
+
+mv /opt/google/earth/free/libcurl.so.4 /opt/google/earth/free/backup_libcurl.so.4
+cp /usr/lib/i386-linux-gnu/libcurl-gnutls.so.4.* /opt/google/earth/free/libcurl.so.4
+
+# Bajamos, extraemos y le cambiamos de dueño y el nombre de la carpeta a la preview del Sozi
+# (Sozi era un plugin para inkscape copado que está en proceso de pasar a programa standalone... 
+# ...Proceso taaaan lento que prefiero que se baje acá el beta/preview y ya tenerlo andando)
+
+wget https://github.com/senshu/Sozi/releases/download/16.02-fix344/Sozi-16.02.141048-linux32.tgz
+tar zxf Sozi-16.02.141048-linux32.tgz -C /home/alumno/
+chown -R alumno /home/alumno/Sozi-16.02.141048-linux32
+mv /home/alumno/Sozi-16.02.141048-linux32 /home/alumno/Sozi
+
+# Adaptamos el Theft Deterrent a los datos del PSBA
+# Y le ponemos un heartbeat que no tarde tanto en chequear.
+
+sed -i 's/ServerAddress=/ServerAddress=main.sarmientoba.net/' /etc/theftdeterrent/TDAgent.ini
+sed -i 's/Heartbeat_Interval=10/Heartbeat_Interval=3/' /etc/theftdeterrent/TDAgent.ini
+
+### FALTA ############
+# Habilitar que arranque el Synapse de entrada; y configurar bien los toques del Touchpad:
+# Las dos cosas son fáciles de hacer en el escritorio, pero no encuentro cómo automatizarlas...
+######################
