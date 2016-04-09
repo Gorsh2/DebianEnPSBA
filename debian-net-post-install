@@ -1,9 +1,5 @@
 #!/bin/bash
 
-#### Link Corto a este archivo ####
-####   http://bit.ly/1RHJUEK  #####
-###################################
-
 # Le agregamos las secciones contribuidas y no-libres al sources.list, y el repositorio de Huayra para tenerlo actualizado.
 # Sí, se lo va a agregar hasta a repos donde no corresponde, pero bueno; no jode eso más que una línea de error en el update... 
 # Al final, actualizamos los repos.
