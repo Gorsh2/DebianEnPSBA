@@ -24,7 +24,7 @@ sed -i '138s/auth_admin_keep/yes/' /usr/share/polkit-1/actions/org.freedesktop.u
 # Bajamos el fondo y modificamos la configuración para caretear el Grub (para que sea casi igual al de PSBA y no los jodan al llevarla al técnico)
 # Ojo, queda en castellano, y el de las nets está en inglés...
 
-wget https://www.dropbox.com/s/soua77eh51g6iwi/grub_netbook.png?dl=0 -O /usr/share/images/desktop-base/grub_netbook.png
+# wget https://www.dropbox.com/s/soua77eh51g6iwi/grub_netbook.png?dl=0 -O /usr/share/images/desktop-base/grub_netbook.png
 
 # En /etc/default/grub Hay que poner la línea del fondo al final, y descomentar lo de "640x480" en el modo gráfico. Ah, y darle el timeout de 30s.
 # En /etc/grub.d/05_debian_theme hay que meter dos líneas (126 y 127) en un if: 
@@ -52,8 +52,8 @@ addgroup alumno sambashare
 # Configuramos el cliente de Epoptes.
 # OJO - CAMBIAR LA IP Y NOMBRE POR LA IP DEL SERVIDOR QUE SE USE (Si es fija; debería)
 
-sed -i '3iserver 10.3.36.39' /etc/hosts
-epoptes-client -c server
+# sed -i '3iserver 10.3.36.39' /etc/hosts
+# epoptes-client -c server
 
 # Bajamos dos paquetes que no están en los repos de Jessie pero andan bien igual: 
 # El synapse, y el Google Earth 6 (porque el 7 no anda bien)
